@@ -1,10 +1,18 @@
 <!--  -->
 <template>
-  <el-tree
-    :data="menus"
-    :props="defaultProps"
-    @node-click="handleNodeClick"
-  ></el-tree>
+  <el-tree :data="menus" :props="defaultProps" :expand-on-click-node="false">
+    <span class="custom-tree-node" slot-scope="{ node, data }">
+      <span>{{ node.label }}</span>
+      <span>
+        <el-button type="text" size="mini" @click="() => append(data)">
+          Append
+        </el-button>
+        <el-button type="text" size="mini" @click="() => remove(node, data)">
+          Delete
+        </el-button>
+      </span>
+    </span>
+  </el-tree>
 </template>
 
 <script>
@@ -19,23 +27,26 @@ export default {
       menus: [],
       defaultProps: {
         children: "children",
-        label: "name"
+        label: "name",
       },
     };
   },
   //方法集合
   methods: {
-    handleNodeClick(data) {
-      console.log(data);
-    },
     getMenus() {
       this.$http({
         url: this.$http.adornUrl("/product/category/list/tree"),
         method: "get",
-      }).then(({data}) => {
+      }).then(({ data }) => {
         console.log("成功获取到菜单数据...", data.data);
         this.menus = data.page;
       });
+    },
+    append(data) {
+      console.log("append", data);
+    },
+    remove(node, data) {
+      console.log("remove", node, data);
     },
   },
 
