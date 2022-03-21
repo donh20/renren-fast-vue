@@ -6,6 +6,7 @@
     :expand-on-click-node="false"
     show-checkbox
     node-key="catId"
+    :default-expanded-keys="expandedKey"
   >
     <span class="custom-tree-node" slot-scope="{ node, data }">
       <span>{{ node.label }}</span>
@@ -41,6 +42,7 @@ export default {
   data() {
     return {
       menus: [],
+      expandedKey: [],
       defaultProps: {
         children: "children",
         label: "name",
@@ -79,11 +81,14 @@ export default {
               message: "菜单删除成功",
               type: "success",
             });
-
+            //刷新出新的菜单
             this.getMenus();
+            //设置需要默认展开的菜单
+            this.expandedKey = [node.parent.data.catId];
           });
         })
         .catch(() => {});
+      console.log("remove", node, data);
     },
   },
 
