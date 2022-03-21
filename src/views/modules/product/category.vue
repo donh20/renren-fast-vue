@@ -1,13 +1,29 @@
 <!--  -->
 <template>
-  <el-tree :data="menus" :props="defaultProps" :expand-on-click-node="false">
+  <el-tree
+    :data="menus"
+    :props="defaultProps"
+    :expand-on-click-node="false"
+    show-checkbox
+    node-key="catId"
+  >
     <span class="custom-tree-node" slot-scope="{ node, data }">
       <span>{{ node.label }}</span>
       <span>
-        <el-button type="text" size="mini" @click="() => append(data)">
+        <el-button
+          v-if="node.level <= 2"
+          type="text"
+          size="mini"
+          @click="() => append(data)"
+        >
           Append
         </el-button>
-        <el-button type="text" size="mini" @click="() => remove(node, data)">
+        <el-button
+          v-if="node.childNodes.length == 0"
+          type="text"
+          size="mini"
+          @click="() => remove(node, data)"
+        >
           Delete
         </el-button>
       </span>
@@ -46,7 +62,15 @@ export default {
       console.log("append", data);
     },
     remove(node, data) {
-      console.log("remove", node, data);
+      var ids = [data.catId];
+      this.$http({
+        url: this.$http.adornUrl("/product/category/delete"),
+        method: "post",
+        data: this.$http.adornData(ids, false),
+      }).then(({ data }) => {
+        console.log("删除成功");
+        this.getMenus();
+      });
     },
   },
 
