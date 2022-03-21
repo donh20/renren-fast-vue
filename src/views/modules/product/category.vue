@@ -54,7 +54,7 @@ export default {
         url: this.$http.adornUrl("/product/category/list/tree"),
         method: "get",
       }).then(({ data }) => {
-        console.log("成功获取到菜单数据...", data.data);
+        console.log("成功获取到菜单数据...", data.page);
         this.menus = data.page;
       });
     },
@@ -63,14 +63,27 @@ export default {
     },
     remove(node, data) {
       var ids = [data.catId];
-      this.$http({
-        url: this.$http.adornUrl("/product/category/delete"),
-        method: "post",
-        data: this.$http.adornData(ids, false),
-      }).then(({ data }) => {
-        console.log("删除成功");
-        this.getMenus();
-      });
+
+      this.$confirm(`是否删除【${data.name}】菜单?`, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.$http({
+            url: this.$http.adornUrl("/product/category/delete"),
+            method: "post",
+            data: this.$http.adornData(ids, false),
+          }).then(({ data }) => {
+            this.$message({
+              message: "菜单删除成功",
+              type: "success",
+            });
+
+            this.getMenus();
+          });
+        })
+        .catch(() => {});
     },
   },
 
