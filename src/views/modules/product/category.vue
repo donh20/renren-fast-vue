@@ -56,7 +56,7 @@ export default {
 
   data() {
     return {
-      category: {name:""},
+      category: { name: "", parentCid: 0, catLevel: 0, showStatus: 1, sort: 0 },
       dialogVisible: false,
       menus: [],
       expandedKey: [],
@@ -78,8 +78,28 @@ export default {
       });
     },
     append(data) {
-      this.dialogVisible = true;
       console.log("append", data);
+      this.dialogVisible = true;
+      this.category.parentCid = data.catId;
+      this.category.catLevel = data.catLevel * 1 + 1;
+    },
+    //添加三级分类
+    addCategory() {
+      console.log("提交的三级分类数据", this.category);
+      this.$http({
+        url: this.$http.adornUrl("/product/category/save"),
+        method: "post",
+        data: this.$http.adornData(this.category, false),
+      }).then(({ data }) => {
+        this.$message({
+          message: "菜单保存成功",
+          type: "success",
+        });
+        this.dialogVisible = false;
+        this.getMenus();
+        //设置需要默认展开的菜单
+        this.expandedKey = [this.category.parentCid];
+      });
     },
     remove(node, data) {
       var ids = [data.catId];
