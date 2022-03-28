@@ -121,7 +121,7 @@ export default {
         method: "get",
       }).then(({ data }) => {
         console.log("回显数据: ", data);
-        this.category.name = "";
+        this.category.name = data.category.name;
         this.category.catId = data.category.catId;
         this.category.icon = data.category.icon;
         this.category.productUnit = data.category.productUnit;
