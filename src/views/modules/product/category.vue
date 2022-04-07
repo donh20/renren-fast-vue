@@ -10,7 +10,6 @@
       :default-expanded-keys="expandedKey"
       draggable="true"
       :allow-drop="allowDrop"
-      :allow-drag="allowDrag"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -119,19 +118,28 @@ export default {
       //被拖动的当前节点总层数
       console.log("allowDrop", draggingNode, dropNode, type);
 
-      var level = this.countNodeLevel(draggingNode.data);
-
-      let deep = (this.maxLevel = draggingNode.data.catLevel + 1);
+      //计算拖动的节点最大层数(从根算起)
+      this.countNodeLevel(draggingNode);
+      //console.log("draggingNodeMaxLevel:", this.maxLevel);
+      //console.log("draggingNode.level:", draggingNode.level);
+      let deep = Math.abs(this.maxLevel - draggingNode.level) + 1;
       console.log("深度：", deep);
-      return false;
+      //this.maxLevel=0
+      if (type == "inner") {
+        return deep + dropNode.level <= 3;
+      } else {
+        return deep + dropNode.parent.level <= 3;
+      }
     },
     countNodeLevel(node) {
-      if (node.children != null && node.children.length > 0) {
-        for (let i = 0; i < node.children.length; i++) {
-          if (node.children[i].catLevel > this.maxLevel) {
-            this.maxLevel = node.children[i].catLevel;
+      if (node.childNodes != null && node.childNodes.length > 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          //console.log(node.childNodes[i].data.name);
+          //console.log(node.childNodes[i].level);
+          if (node.childNodes[i].level > this.maxLevel) {
+            this.maxLevel = node.childNodes[i].level;
           }
-          this.countNodeLevel(node.children[i]);
+          this.countNodeLevel(node.childNodes[i]);
         }
       }
     },
