@@ -8,8 +8,9 @@
       show-checkbox
       node-key="catId"
       :default-expanded-keys="expandedKey"
-      draggable="true"
+      draggable
       :allow-drop="allowDrop"
+      @node-drop="handleDrop"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -112,6 +113,9 @@ export default {
         console.log("成功获取到菜单数据...", data.page);
         this.menus = data.page;
       });
+    },
+    handleDrop(draggingNode, dropNode, dropType, ev) {
+      console.log("handleDrop: ", draggingNode, dropNode, dropType);
     },
     allowDrop(draggingNode, dropNode, type) {
       //被拖动的当前节点以及所在父节点总层数不能大于3
