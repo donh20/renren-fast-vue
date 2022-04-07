@@ -8,6 +8,9 @@
       show-checkbox
       node-key="catId"
       :default-expanded-keys="expandedKey"
+      draggable="true"
+      :allow-drop="allowDrop"
+      :allow-drag="allowDrag"
     >
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -78,6 +81,7 @@ export default {
 
   data() {
     return {
+      maxLevel: 0,
       title: "",
       dialogType: "", //edit, add
       category: {
@@ -109,6 +113,27 @@ export default {
         console.log("成功获取到菜单数据...", data.page);
         this.menus = data.page;
       });
+    },
+    allowDrop(draggingNode, dropNode, type) {
+      //被拖动的当前节点以及所在父节点总层数不能大于3
+      //被拖动的当前节点总层数
+      console.log("allowDrop", draggingNode, dropNode, type);
+
+      var level = this.countNodeLevel(draggingNode.data);
+
+      let deep = (this.maxLevel = draggingNode.data.catLevel + 1);
+      console.log("深度：", deep);
+      return false;
+    },
+    countNodeLevel(node) {
+      if (node.children != null && node.children.length > 0) {
+        for (let i = 0; i < node.children.length; i++) {
+          if (node.children[i].catLevel > this.maxLevel) {
+            this.maxLevel = node.children[i].catLevel;
+          }
+          this.countNodeLevel(node.children[i]);
+        }
+      }
     },
     edit(data) {
       console.log("edit", data);
