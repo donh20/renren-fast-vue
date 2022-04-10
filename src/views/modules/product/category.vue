@@ -81,6 +81,7 @@ export default {
 
   data() {
     return {
+      updateNodes: [],//需要更新的节点都放在这里,每处理一个就加进来
       maxLevel: 0,
       title: "",
       dialogType: "", //edit, add
@@ -116,6 +117,37 @@ export default {
     },
     handleDrop(draggingNode, dropNode, dropType, ev) {
       console.log("handleDrop: ", draggingNode, dropNode, dropType);
+      //1. 当前节点最新的父节点id
+      let pCid = 0;
+      let siblings = null;
+      if (dropType == "before" || dropType == "after") {
+        pCid =
+          dropNode.parent.data.catId == undefined
+            ? 0
+            : dropNode.parent.data.catId;
+        siblings = dropNode.parent.childNodes;
+      } else {
+        pCid = dropNode.data.catId;
+        siblings = dropNode.childNodes;
+      }
+      //2. 当前拖拽的节点的最新顺序
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i].data.catId == draggingNode.data.catId) {
+          //如果遍历的是当前拖拽的节点,不止要放排序,还得放父id
+          this.updateNodes.push({
+            catId: siblings[i].data.catId,
+            sort: i,//把当前的顺序灌进去
+            parentCid: pCid,
+          });
+        } else {
+          //否则就只放排序信息
+          this.updateNodes.push({ catId: siblings[i].data.catId, sort: i });
+        }
+      }
+      //3. 当前拖拽节点的最新层级
+
+      //当前拖拽节点的最新层级
+      console.log("updateNodes", this.updateNodes);
     },
     allowDrop(draggingNode, dropNode, type) {
       //被拖动的当前节点以及所在父节点总层数不能大于3
@@ -126,7 +158,7 @@ export default {
       this.countNodeLevel(draggingNode);
       //console.log("draggingNodeMaxLevel:", this.maxLevel);
       //console.log("draggingNode.level:", draggingNode.level);
-      let deep = Math.abs(this.maxLevel - draggingNode.level) + 1;
+      let deep = this.maxLevel - draggingNode.level + 1;
       console.log("深度：", deep);
       //this.maxLevel=0
       if (type == "inner") {
