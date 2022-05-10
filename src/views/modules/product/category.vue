@@ -168,6 +168,7 @@ export default {
       }
     },
     countNodeLevel(node) {
+      //依次找到所有子节点，求出最大深度
       if (node.childNodes != null && node.childNodes.length > 0) {
         for (let i = 0; i < node.childNodes.length; i++) {
           //console.log(node.childNodes[i].data.name);
