@@ -1,7 +1,11 @@
 <!--  -->
 <template>
   <div>
-    <el-switch v-model="draggable" active-text="开启拖拽" inactive-text="关闭拖拽"></el-switch>
+    <el-switch
+      v-model="draggable"
+      active-text="开启拖拽"
+      inactive-text="关闭拖拽"
+    ></el-switch>
     <el-button v-if="draggable" @click="batchSave">批量保存</el-button>
     <el-button type="danger" @click="batchDelete">批量删除</el-button>
     <el-tree
@@ -85,6 +89,7 @@ export default {
 
   data() {
     return {
+      pCid: [],
       draggable: false,
       updateNodes: [], //需要更新的节点都放在这里,每处理一个就加进来
       maxLevel: 0,
@@ -183,13 +188,15 @@ export default {
         pCid = dropNode.data.catId;
         siblings = dropNode.childNodes;
       }
+      this.pCid.push(pCid);
       //2. 当前拖拽的节点的最新顺序
       for (let i = 0; i < siblings.length; i++) {
         if (siblings[i].data.catId == draggingNode.data.catId) {
-          //如果遍历的是当前拖拽的节点,不止要放排序,还得放父id
+          //如果遍历的是当前拖拽的节点,分情况讨论
           let catLevel = draggingNode.level;
+          //1. 当前节点的层级发生变化
           if (siblings[i].level != draggingNode.level) {
-            //当前节点的层级发生变化
+            //修改当前节点的层级
             catLevel = siblings[i].level;
             //修改它子节点的层级
             this.updateChildNodeLevel(siblings[i]);
@@ -198,6 +205,7 @@ export default {
             catId: siblings[i].data.catId,
             sort: i, //把当前的顺序灌进去
             parentCid: pCid,
+            catLevel: catLevel,
           });
         } else {
           //否则就只放排序信息
@@ -211,23 +219,37 @@ export default {
     },
 
     updateChildNodeLevel(node) {
-
+      if (node.childNodes.length > 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          var cNode = node.childNodes[i].data;
+          this.updateNodes.push({
+            catId: cNode.catId,
+            catLevel: node.childNodes[i].level,
+          });
+          this.updateChildNodeLevel(node.childNodes[i]);
+        }
+      }
     },
     allowDrop(draggingNode, dropNode, type) {
       //被拖动的当前节点以及所在父节点总层数不能大于3
       //被拖动的当前节点总层数
-      console.log("allowDrop", draggingNode, dropNode, type);
+      //console.log("allowDrop", draggingNode, dropNode, type);
 
-      //计算拖动的节点最大层数(从根算起)
+      //计算拖动的节点最大层数(以拖动节点为根算起,结果保存到this.maxLevel中)
       this.countNodeLevel(draggingNode);
-      //console.log("draggingNodeMaxLevel:", this.maxLevel);
-      //console.log("draggingNode.level:", draggingNode.level);
-      let deep = this.maxLevel - draggingNode.level + 1;
-      console.log("深度：", deep);
+
+      // console.log("draggingNodeMaxLevel:", this.maxLevel);
+      // console.log("draggingNode.level:", draggingNode.level);
+      let deep = Math.abs(this.maxLevel - draggingNode.level) + 1;
+      // console.log("深度：", deep);
       //this.maxLevel=0
       if (type == "inner") {
+        console.log(
+          `this.maxLevel: ${this.maxLevel}: draggingNode.data.catLevel: ${draggingNode.data.catLevel}: dropNode.level: ${dropNode.level}`
+        );
         return deep + dropNode.level <= 3;
       } else {
+        `this.maxLevel: ${this.maxLevel}: draggingNode.data.catLevel: ${draggingNode.data.catLevel}: dropNode.parent.level: ${dropNode.parent.level}`;
         return deep + dropNode.parent.level <= 3;
       }
     },
@@ -235,15 +257,16 @@ export default {
       //依次找到所有子节点，求出最大深度
       if (node.childNodes != null && node.childNodes.length > 0) {
         for (let i = 0; i < node.childNodes.length; i++) {
-          //console.log(node.childNodes[i].data.name);
-          //console.log(node.childNodes[i].level);
           if (node.childNodes[i].level > this.maxLevel) {
             this.maxLevel = node.childNodes[i].level;
           }
           this.countNodeLevel(node.childNodes[i]);
         }
+      } else {
+        this.maxLevel = node.level;
       }
     },
+
     edit(data) {
       console.log("edit", data);
       this.dialogType = "edit";
